@@ -135,7 +135,7 @@
   <link rel="stylesheet" href="https://unpkg.com/paper-css@0.4.1/paper.css">
   <style>
     @page { size: A4 landscape; margin: 10mm; }
-    @media print { body.A4 { background: white; } }
+    @media print { body.A4 { background: white; contain: size; /* chrome fix */ } }
     body.A4 { padding: 1cm; }
     h1 { text-align: center; margin-bottom: 0.5cm; }
     table { width: 100%; border-collapse: collapse; font-size: 1.1em; }
