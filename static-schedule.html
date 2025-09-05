@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+	<meta charset="UTF-8">
+	<title>Розклад</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://unpkg.com/paper-css@0.4.1/paper.css">
+	<style>
+		@page {
+			size: A4 landscape;
+			margin: 10mm;
+		}
+		@media print {
+			body.A4 { 
+				background: white; 
+				contain: size; /* chrome fix */
+			}
+			sheet {
+				/* firefox, safari extra page fix */
+				width: 100% !important;
+				height: 100% !important;
+				page-break-after: auto !important;
+			}
+		}
+		body.A4 {
+			padding: 1cm;
+		}
+		h1 {
+			text-align: center;
+			margin-bottom: 0.5cm;
+		}
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 1.1em;
+		}
+		th, td {
+			border: 1px solid #333;
+			padding: 0.3em 0.5em;
+			text-align: center;
+		}
+		th {
+			background: #f0f0f0;
+		}
+		.time {
+			font-size: 0.95em;
+			color: #555;
+		}
+	</style>
+</head>
+<body class="A4 landscape">
+	<section class="sheet padding-10mm">
+		<h1 id="class-title"></h1>
+		<div id="schedule"></div>
+	</section>
+	<script>
+		fetch('7B.json')
+			.then(r => r.json())
+			.then(data => {
+				const days = data.days;
+				const timeSlots = data.timeSlots;
+				const schedule = data.schedule;
+				const header = data.header || {};
+				document.getElementById('class-title').textContent = header.title || 'Schedule';
+				let html = `<table><thead><tr><th>№</th><th>${header.time || 'Time'}</th>`;
+				days.forEach(day => html += `<th>${day}</th>`);
+				html += '</tr></thead><tbody>';
+				for (let i = 0; i < timeSlots.length; i++) {
+					html += `<tr><td>${i+1}</td><td class='time'>${timeSlots[i]}</td>`;
+					for (let d = 0; d < days.length; d++) {
+						let subj = schedule[d]?.[i] ?? '';
+						html += `<td>${subj}</td>`;
+					}
+					html += '</tr>';
+				}
+				html += '</tbody></table>';
+				document.getElementById('schedule').innerHTML = html;
+			});
+	</script>
+</body>
+</html>

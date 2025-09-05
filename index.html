@@ -1,72 +1,171 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Розклад 5-Б</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="https://unpkg.com/paper-css@0.4.1/paper.css">
-	<style>
-			@page {
-				size: A4 landscape;
-				margin: 10mm;
-			}
-			@media print {
-				body.A4 { background: white; }
-			}
-			body.A4 {
-				padding: 1cm;
-			}
-		h1 {
-			text-align: center;
-			margin-bottom: 0.5cm;
-		}
-		table {
-			width: 100%;
-			border-collapse: collapse;
-			font-size: 1.1em;
-		}
-		th, td {
-			border: 1px solid #333;
-			padding: 0.3em 0.5em;
-			text-align: center;
-		}
-		th {
-			background: #f0f0f0;
-		}
-		.time {
-			font-size: 0.95em;
-			color: #555;
-		}
-	</style>
+  <meta charset="UTF-8">
+  <title>School Schedule Printer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center">
+  <div class="max-w-xl w-full p-6 bg-white rounded-lg shadow-lg">
+    <div class="flex justify-between items-center mb-4">
+      <h1 id="title" class="text-2xl font-bold">School Schedule Printer</h1>
+      <select id="lang" class="border rounded px-2 py-1">
+        <option value="ua">🇺🇦 Українська</option>
+        <option value="en">🇬🇧 English</option>
+      </select>
+    </div>
+    <p id="desc" class="mb-6 text-gray-700">Upload your schedule JSON file to generate a printable timetable.</p>
+    <div id="dropzone" class="border-2 border-dashed border-blue-400 rounded-lg p-8 text-center cursor-pointer bg-blue-50 hover:bg-blue-100 transition mb-4">
+      <span id="dropLabel">Drag & Drop or Select JSON file</span>
+      <input type="file" id="fileInput" accept="application/json" class="hidden" />
+    </div>
+    <div id="fileInfo" class="mb-4 text-green-600 font-medium"></div>
+    <div class="flex flex-col gap-2">
+      <a href="static-schedule.html" target="_blank" onclick="window.open('static-schedule.html', '_blank').print(); return false;" class="text-blue-600 underline">Example Output</a>
+      <a href="7B.json" download class="text-blue-600 underline">Example Input</a>
+    </div>
+  </div>
+  <script>
+    const translations = {
+      en: {
+        title: "School Schedule Printer",
+        desc: "Upload your schedule JSON file to generate a printable timetable.",
+        dropLabel: "Drag & Drop or Select JSON file",
+        fileLoaded: "File loaded:",
+        exampleOutput: "Example Output",
+        exampleInput: "Example Input",
+        alertInvalid: "Please select a valid JSON file.",
+        alertParse: "Invalid JSON file."
+      },
+      ua: {
+        title: "Друк розкладу уроків",
+        desc: "Завантажте файл розкладу у форматі JSON для створення роздруківки.",
+        dropLabel: "Перетягніть або виберіть файл JSON",
+        fileLoaded: "Файл завантажено:",
+        exampleOutput: "Приклад результату",
+        exampleInput: "Приклад вхідного файлу",
+        alertInvalid: "Оберіть коректний JSON файл.",
+        alertParse: "Некоректний JSON файл."
+      }
+    };
+    const langSelect = document.getElementById('lang');
+    function setLang(lang) {
+      document.getElementById('title').textContent = translations[lang].title;
+      document.getElementById('desc').textContent = translations[lang].desc;
+      document.getElementById('dropLabel').textContent = translations[lang].dropLabel;
+      document.querySelector('a[href="static-schedule.html"]').textContent = translations[lang].exampleOutput;
+      document.querySelector('a[href="7B.json"]').textContent = translations[lang].exampleInput;
+    }
+    langSelect.addEventListener('change', e => setLang(e.target.value));
+
+    // Detect browser language
+    function detectLang() {
+      const navLang = navigator.language || navigator.userLanguage || '';
+      if (navLang.startsWith('uk')) return 'ua';
+      if (navLang.startsWith('ru')) return 'ua';
+      if (navLang.startsWith('en')) return 'en';
+      return 'en';
+    }
+    langSelect.value = detectLang();
+    setLang(langSelect.value);
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropzone.classList.add('bg-blue-100');
+    });
+    dropzone.addEventListener('dragleave', e => {
+      e.preventDefault();
+      dropzone.classList.remove('bg-blue-100');
+    });
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('bg-blue-100');
+      handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', e => {
+      if (e.target.files[0]) handleFile(e.target.files[0]);
+    });
+    function handleFile(file) {
+      if (file && file.type === "application/json") {
+        fileInfo.textContent = `${translations[langSelect.value].fileLoaded} ${file.name}`;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            const html = generatePrintableSchedule(data);
+            let printFrame = document.getElementById('print-frame');
+            if (!printFrame) {
+              printFrame = document.createElement('iframe');
+              printFrame.style.display = 'none';
+              printFrame.id = 'print-frame';
+              document.body.appendChild(printFrame);
+            }
+            printFrame.onload = function() {
+              printFrame.contentWindow.focus();
+              printFrame.contentWindow.print();
+            };
+            printFrame.srcdoc = html;
+          } catch (err) {
+            alert(translations[langSelect.value].alertParse);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        fileInfo.textContent = "";
+        alert(translations[langSelect.value].alertInvalid);
+      }
+    }
+
+    function generatePrintableSchedule(data) {
+      const days = data.days || [];
+      const timeSlots = data.timeSlots || [];
+      const schedule = data.schedule || [];
+      const header = data.header || {};
+      return `<!DOCTYPE html>
+<html lang="${langSelect.value === 'ua' ? 'uk' : 'en'}">
+<head>
+  <meta charset="UTF-8">
+  <title>${header.title || 'Schedule'}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/paper-css@0.4.1/paper.css">
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    @media print { body.A4 { background: white; contain: size; /* chrome fix */ } }
+    body.A4 { padding: 1cm; }
+    h1 { text-align: center; margin-bottom: 0.5cm; }
+    table { width: 100%; border-collapse: collapse; font-size: 1.1em; }
+    th, td { border: 1px solid #333; padding: 0.3em 0.5em; text-align: center; }
+    th { background: #f0f0f0; }
+    .time { font-size: 0.95em; color: #555; }
+  </style>
 </head>
 <body class="A4 landscape">
-	<section class="sheet padding-10mm">
-		<h1 id="class-title"></h1>
-		<div id="schedule"></div>
-	</section>
-	<script>
-		fetch('7B.json')
-			.then(r => r.json())
-			.then(data => {
-				const days = data.days;
-				const timeSlots = data.timeSlots;
-				const schedule = data.schedule;
-				const header = data.header || {};
-				document.getElementById('class-title').textContent = header.title || 'Schedule';
-				let html = `<table><thead><tr><th>№</th><th>${header.time || 'Time'}</th>`;
-				days.forEach(day => html += `<th>${day}</th>`);
-				html += '</tr></thead><tbody>';
-				for (let i = 0; i < timeSlots.length; i++) {
-					html += `<tr><td>${i+1}</td><td class='time'>${timeSlots[i]}</td>`;
-					for (let d = 0; d < days.length; d++) {
-						let subj = schedule[d]?.[i] ?? '';
-						html += `<td>${subj}</td>`;
-					}
-					html += '</tr>';
-				}
-				html += '</tbody></table>';
-				document.getElementById('schedule').innerHTML = html;
-			});
-	</script>
+  <section class="sheet padding-10mm">
+    <h1 id="class-title">${header.title || 'Schedule'}</h1>
+    <div id="schedule">
+      <table><thead><tr><th>№</th><th>${header.time || (langSelect.value === 'ua' ? 'Час' : 'Time')}</th>` +
+        days.map(day => `<th>${day}</th>`).join('') +
+        `</tr></thead><tbody>` +
+        timeSlots.map((slot, i) => {
+          let row = `<tr><td>${i+1}</td><td class='time'>${slot}</td>`;
+          for (let d = 0; d < days.length; d++) {
+            let subj = schedule[d]?.[i] ?? '';
+            row += `<td>${subj}</td>`;
+          }
+          row += '</tr>';
+          return row;
+        }).join('') +
+        `</tbody></table>` +
+      `</div>
+  </section>
+</body>
+</html>`;
+    }
+  </script>
 </body>
 </html>
