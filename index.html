@@ -15,15 +15,14 @@
         <option value="en">🇬🇧 English</option>
       </select>
     </div>
-    <p id="desc" class="mb-6 text-gray-700">Upload your schedule JSON file to generate a printable timetable.</p>
-    <div id="dropzone" class="border-2 border-dashed border-blue-400 rounded-lg p-8 text-center cursor-pointer bg-blue-50 hover:bg-blue-100 transition mb-4">
+  <p id="desc" class="mb-6 text-gray-700">Upload your schedule JSON file to generate a printable timetable. (<a id="exampleInLink" href="7B.json" download class="text-blue-600 underline">Example Input</a>)</p>
+  <div id="dropzone" class="border-2 border-dashed border-blue-400 rounded-lg p-8 text-center cursor-pointer bg-blue-50 hover:bg-blue-100 transition mb-4">
       <span id="dropLabel">Drag & Drop or Select JSON file</span>
       <input type="file" id="fileInput" accept="application/json" class="hidden" />
     </div>
     <div id="fileInfo" class="mb-4 text-green-600 font-medium"></div>
     <div class="flex flex-col gap-2">
       <a href="static-schedule.html" target="_blank" onclick="window.open('static-schedule.html', '_blank').print(); return false;" class="text-blue-600 underline">Example Output</a>
-      <a href="7B.json" download class="text-blue-600 underline">Example Input</a>
     </div>
   </div>
   <script>
@@ -34,7 +33,7 @@
         dropLabel: "Drag & Drop or Select JSON file",
         fileLoaded: "File loaded:",
         exampleOutput: "Example Output",
-        exampleInput: "Example Input",
+        exampleInput: "template",
         alertInvalid: "Please select a valid JSON file.",
         alertParse: "Invalid JSON file."
       },
@@ -44,7 +43,7 @@
         dropLabel: "Перетягніть або виберіть файл JSON",
         fileLoaded: "Файл завантажено:",
         exampleOutput: "Приклад результату",
-        exampleInput: "Приклад вхідного файлу",
+        exampleInput: "шаблон",
         alertInvalid: "Оберіть коректний JSON файл.",
         alertParse: "Некоректний JSON файл."
       }
@@ -52,10 +51,9 @@
     const langSelect = document.getElementById('lang');
     function setLang(lang) {
       document.getElementById('title').textContent = translations[lang].title;
-      document.getElementById('desc').textContent = translations[lang].desc;
+      document.getElementById('desc').innerHTML = `${translations[lang].desc} (<a id='exampleInLink' href='7B.json' download class='text-blue-600 underline'>${translations[lang].exampleInput}</a>)`;
       document.getElementById('dropLabel').textContent = translations[lang].dropLabel;
       document.querySelector('a[href="static-schedule.html"]').textContent = translations[lang].exampleOutput;
-      document.querySelector('a[href="7B.json"]').textContent = translations[lang].exampleInput;
     }
     langSelect.addEventListener('change', e => setLang(e.target.value));
 
