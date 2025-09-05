@@ -41,26 +41,31 @@
 </head>
 <body class="A4 landscape">
 	<section class="sheet padding-10mm">
-		<h1>Розклад уроків 7-Б</h1>
+		<h1 id="class-title"></h1>
 		<div id="schedule"></div>
 	</section>
 	<script>
 		fetch('7B.json')
 			.then(r => r.json())
 			.then(data => {
-				const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П’ятниця"];
-				const lessons = data["schedule"];
+				const days = data.days;
+				const className = data.class;
+				const timeSlots = data.timeSlots;
+				const schedule = data.schedule;
+				document.getElementById('class-title').textContent = `Розклад уроків ${className}`;
 				let html = '<table><thead><tr><th>№</th><th>Час</th>';
 				days.forEach(day => html += `<th>${day}</th>`);
 				html += '</tr></thead><tbody>';
-				lessons.forEach(lesson => {
-					html += `<tr><td>${lesson.lesson}</td><td class='time'>${lesson.time}</td>`;
-					days.forEach(day => {
-						let subj = lesson.subjects[day] || '';
+				// Each lesson index (row)
+				for (let i = 0; i < timeSlots.length; i++) {
+					html += `<tr><td>${i+1}</td><td class='time'>${timeSlots[i]}</td>`;
+					// Each day (column)
+					for (let d = 0; d < days.length; d++) {
+						let subj = schedule[d]?.[i] ?? '';
 						html += `<td>${subj}</td>`;
-					});
+					}
 					html += '</tr>';
-				});
+				}
 				html += '</tbody></table>';
 				document.getElementById('schedule').innerHTML = html;
 			});
