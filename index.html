@@ -98,10 +98,18 @@
           try {
             const data = JSON.parse(e.target.result);
             const html = generatePrintableSchedule(data);
-            const win = window.open('', '_blank');
-            win.document.write(html);
-            win.document.close();
-            win.onload = function() { win.print(); };
+            let printFrame = document.getElementById('print-frame');
+            if (!printFrame) {
+              printFrame = document.createElement('iframe');
+              printFrame.style.display = 'none';
+              printFrame.id = 'print-frame';
+              document.body.appendChild(printFrame);
+            }
+            printFrame.onload = function() {
+              printFrame.contentWindow.focus();
+              printFrame.contentWindow.print();
+            };
+            printFrame.srcdoc = html;
           } catch (err) {
             alert(translations[langSelect.value].alertParse);
           }
