@@ -11,8 +11,8 @@
     <div class="flex justify-between items-center mb-4">
       <h1 id="title" class="text-2xl font-bold">School Schedule Printer</h1>
       <select id="lang" class="border rounded px-2 py-1">
-        <option value="en">EN</option>
-        <option value="ua">UA</option>
+        <option value="ua">🇺🇦 Українська</option>
+        <option value="en">🇬🇧 English</option>
       </select>
     </div>
     <p id="desc" class="mb-6 text-gray-700">Upload your schedule JSON file to generate a printable timetable.</p>
@@ -54,6 +54,16 @@
       document.querySelector('a[href="7B.json"]').textContent = translations[lang].exampleInput;
     }
     langSelect.addEventListener('change', e => setLang(e.target.value));
+
+    // Detect browser language, default to Ukrainian
+    function detectLang() {
+      const navLang = navigator.language || navigator.userLanguage || '';
+      if (navLang.startsWith('uk')) return 'ua';
+      if (navLang.startsWith('ru')) return 'ua';
+      if (navLang.startsWith('en')) return 'en';
+      return 'en';
+    }
+    langSelect.value = detectLang();
     setLang(langSelect.value);
 
     const dropzone = document.getElementById('dropzone');
