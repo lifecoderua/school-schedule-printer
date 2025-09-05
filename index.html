@@ -49,17 +49,15 @@
 			.then(r => r.json())
 			.then(data => {
 				const days = data.days;
-				const className = data.class;
 				const timeSlots = data.timeSlots;
 				const schedule = data.schedule;
-				document.getElementById('class-title').textContent = `Розклад уроків ${className}`;
-				let html = '<table><thead><tr><th>№</th><th>Час</th>';
+				const header = data.header || {};
+				document.getElementById('class-title').textContent = header.title || 'Schedule';
+				let html = `<table><thead><tr><th>№</th><th>${header.time || 'Time'}</th>`;
 				days.forEach(day => html += `<th>${day}</th>`);
 				html += '</tr></thead><tbody>';
-				// Each lesson index (row)
 				for (let i = 0; i < timeSlots.length; i++) {
 					html += `<tr><td>${i+1}</td><td class='time'>${timeSlots[i]}</td>`;
-					// Each day (column)
 					for (let d = 0; d < days.length; d++) {
 						let subj = schedule[d]?.[i] ?? '';
 						html += `<td>${subj}</td>`;
