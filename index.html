@@ -79,10 +79,69 @@
     function handleFile(file) {
       if (file && file.type === "application/json") {
         fileInfo.textContent = `${translations[langSelect.value].fileLoaded} ${file.name}`;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            const html = generatePrintableSchedule(data);
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.document.close();
+          } catch (err) {
+            alert('Invalid JSON file.');
+          }
+        };
+        reader.readAsText(file);
       } else {
         fileInfo.textContent = "";
         alert("Please select a valid JSON file.");
       }
+    }
+
+    function generatePrintableSchedule(data) {
+      const days = data.days || [];
+      const timeSlots = data.timeSlots || [];
+      const schedule = data.schedule || [];
+      const header = data.header || {};
+      return `<!DOCTYPE html>
+<html lang="${langSelect.value === 'ua' ? 'uk' : 'en'}">
+<head>
+  <meta charset="UTF-8">
+  <title>${header.title || 'Schedule'}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/paper-css@0.4.1/paper.css">
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    @media print { body.A4 { background: white; } }
+    body.A4 { padding: 1cm; }
+    h1 { text-align: center; margin-bottom: 0.5cm; }
+    table { width: 100%; border-collapse: collapse; font-size: 1.1em; }
+    th, td { border: 1px solid #333; padding: 0.3em 0.5em; text-align: center; }
+    th { background: #f0f0f0; }
+    .time { font-size: 0.95em; color: #555; }
+  </style>
+</head>
+<body class="A4 landscape">
+  <section class="sheet padding-10mm">
+    <h1 id="class-title">${header.title || 'Schedule'}</h1>
+    <div id="schedule">
+      <table><thead><tr><th>№</th><th>${header.time || (langSelect.value === 'ua' ? 'Час' : 'Time')}</th>` +
+        days.map(day => `<th>${day}</th>`).join('') +
+        `</tr></thead><tbody>` +
+        timeSlots.map((slot, i) => {
+          let row = `<tr><td>${i+1}</td><td class='time'>${slot}</td>`;
+          for (let d = 0; d < days.length; d++) {
+            let subj = schedule[d]?.[i] ?? '';
+            row += `<td>${subj}</td>`;
+          }
+          row += '</tr>';
+          return row;
+        }).join('') +
+        `</tbody></table>` +
+      `</div>
+  </section>
+</body>
+</html>`;
     }
   </script>
 </body>
