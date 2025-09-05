@@ -34,7 +34,9 @@
         dropLabel: "Drag & Drop or Select JSON file",
         fileLoaded: "File loaded:",
         exampleOutput: "Example Output",
-        exampleInput: "Example Input"
+        exampleInput: "Example Input",
+        alertInvalid: "Please select a valid JSON file.",
+        alertParse: "Invalid JSON file."
       },
       ua: {
         title: "Друк розкладу уроків",
@@ -42,7 +44,9 @@
         dropLabel: "Перетягніть або виберіть файл JSON",
         fileLoaded: "Файл завантажено:",
         exampleOutput: "Приклад результату",
-        exampleInput: "Приклад вхідного файлу"
+        exampleInput: "Приклад вхідного файлу",
+        alertInvalid: "Оберіть коректний JSON файл.",
+        alertParse: "Некоректний JSON файл."
       }
     };
     const langSelect = document.getElementById('lang');
@@ -55,7 +59,7 @@
     }
     langSelect.addEventListener('change', e => setLang(e.target.value));
 
-    // Detect browser language, default to Ukrainian
+    // Detect browser language
     function detectLang() {
       const navLang = navigator.language || navigator.userLanguage || '';
       if (navLang.startsWith('uk')) return 'ua';
@@ -98,13 +102,13 @@
             win.document.write(html);
             win.document.close();
           } catch (err) {
-            alert('Invalid JSON file.');
+            alert(translations[langSelect.value].alertParse);
           }
         };
         reader.readAsText(file);
       } else {
         fileInfo.textContent = "";
-        alert("Please select a valid JSON file.");
+        alert(translations[langSelect.value].alertInvalid);
       }
     }
 
