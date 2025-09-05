@@ -1,0 +1,12 @@
+{
+  "name": "school-schedule",
+  "version": "1.0.0",
+  "description": "Printable school schedule for class 5-Б",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^14.0.1"
+  }
+}
